@@ -13,58 +13,49 @@ import {
 } from "./services/weatherApi";
 
 export default function Home() {
-  const [city, setCity] = useState("San Nicolas");
+  const [city, setCity] = useState("San Nicolas,AR");
   const [data, setData] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [unit, setUnit] = useState("C");
 
-  // 🌡️ CONVERSIÓN
   const convertTemp = (temp) => {
-    if (unit === "C") return temp;
-    return (temp * 9) / 5 + 32;
+    return unit === "C" ? temp : (temp * 9) / 5 + 32;
   };
 
-  // 🔁 FETCH POR CIUDAD
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const weatherRes = await getCurrentWeather(city);
-        const forecastRes = await getForecast(city);
-
-        setData(weatherRes);
-        setForecast(forecastRes);
-      } catch (error) {
-        console.error("Error:", error);
+        const w = await getCurrentWeather(city);
+        const f = await getForecast(city);
+        setData(w);
+        setForecast(f);
+      } catch (err) {
+        console.error(err);
       }
     };
 
     fetchData();
   }, [city]);
 
-  // 📍 GEOLOCALIZACIÓN (USANDO API PRO)
   const handleLocation = () => {
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
+    if (typeof window === "undefined") return;
 
-      try {
-        const weatherRes = await getWeatherByCoords(latitude, longitude);
-        const forecastRes = await getForecastByCoords(latitude, longitude);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
 
-        setData(weatherRes);
-        setForecast(forecastRes);
-      } catch (error) {
-        console.error("Error ubicación:", error);
-      }
+      const w = await getWeatherByCoords(latitude, longitude);
+      const f = await getForecastByCoords(latitude, longitude);
+
+      setData(w);
+      setForecast(f);
     });
   };
 
-  // ⏳ LOADING
   if (!data) return <p className="text-white p-10">Cargando...</p>;
 
   return (
-    <main className="min-h-screen bg-[#100e1d] text-white flex">
+    <main className="flex min-h-screen bg-[#100e1d] text-white">
 
-      {/* 🌑 SIDEBAR */}
       <Sidebar
         data={data}
         onSearch={setCity}
@@ -73,38 +64,19 @@ export default function Home() {
         convertTemp={convertTemp}
       />
 
-      {/* 🌤️ PANEL DERECHO */}
-      <div className="flex-1 p-10 max-w-5xl mx-auto">
+      <div className="flex-1 p-10">
 
-        {/* 🌡️ TOGGLE */}
-        <div className="flex justify-end gap-4 mb-6">
-          <button
-            onClick={() => setUnit("C")}
-            className={`w-10 h-10 rounded-full ${
-              unit === "C" ? "bg-white text-black" : "bg-gray-600"
-            }`}
-          >
-            °C
-          </button>
-
-          <button
-            onClick={() => setUnit("F")}
-            className={`w-10 h-10 rounded-full ${
-              unit === "F" ? "bg-white text-black" : "bg-gray-600"
-            }`}
-          >
-            °F
-          </button>
+        <div className="flex justify-end gap-2">
+          <button onClick={() => setUnit("C")}>°C</button>
+          <button onClick={() => setUnit("F")}>°F</button>
         </div>
 
-        {/* 📅 FORECAST */}
         <Forecast
           forecast={forecast}
           unit={unit}
           convertTemp={convertTemp}
         />
 
-        {/* 📊 HIGHLIGHTS */}
         <Highlights data={data} />
 
       </div>

@@ -6,7 +6,7 @@ export default function WeatherCard({ day, unit, convertTemp }) {
   return (
     <div className="bg-[#1e213a] p-4 text-center rounded-xl">
 
-      {/* 📅 FECHA */}
+      {/* FECHA */}
       <p className="text-sm text-gray-300">
         {new Date(day.dt_txt).toLocaleDateString("en-US", {
           weekday: "short",
@@ -14,14 +14,14 @@ export default function WeatherCard({ day, unit, convertTemp }) {
         })}
       </p>
 
-      {/* 🌤️ ICONO */}
+      {/* ICONO */}
       <img
         src={`https://openweathermap.org/img/wn/${day.weather[0].icon}.png`}
         alt="weather icon"
         className="mx-auto my-2"
       />
 
-      {/* 🌡️ TEMPERATURA */}
+      {/* TEMPERATURA */}
       <div className="flex justify-center gap-2 text-lg font-semibold">
         <span>
           {Math.round(convertTemp(day.main.temp_max))}°
